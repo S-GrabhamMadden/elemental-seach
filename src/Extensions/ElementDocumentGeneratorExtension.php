@@ -9,13 +9,13 @@
 
 namespace SilverStripers\ElementalSearch\Extensions;
 
-use DNADesign\Elemental\Models\BaseElement;
-use SilverStripe\Core\Config\Config;
+use Override;
 use SilverStripers\ElementalSearch\Model\SearchDocument;
 
 class ElementDocumentGeneratorExtension extends SearchDocumentGenerator
 {
 
+    public $owner;
     public function getGenerateSearchLink()
     {
         /* @var $element BaseElement */
@@ -24,21 +24,25 @@ class ElementDocumentGeneratorExtension extends SearchDocumentGenerator
         return $page ? $page->Link() : null;
     }
 
+    #[Override]
     public function onAfterWrite()
     {
         return null;
     }
 
+    #[Override]
     public function onAfterDelete()
     {
         return null;
     }
 
+    #[Override]
     public function onAfterPublish()
     {
         if ($this->isThisAStandAloneClass()) {
             self::make_document_for($this->owner);
         }
+
         if (!SearchDocumentGenerator::search_documents_prevented()) {
             $this->makeSearchDocumentForPage();
         }
@@ -49,11 +53,13 @@ class ElementDocumentGeneratorExtension extends SearchDocumentGenerator
         return null;
     }
 
+    #[Override]
     public function onAfterArchive()
     {
         if ($this->isThisAStandAloneClass()) {
             self::delete_doc($this->owner);
         }
+
         if (!SearchDocumentGenerator::search_documents_prevented()) {
             $this->makeSearchDocumentForPage();
         }
@@ -71,10 +77,7 @@ class ElementDocumentGeneratorExtension extends SearchDocumentGenerator
 
     private function isThisAStandAloneClass()
     {
-        if (($classes = $this->getStandAloneElementClasses()) && in_array(get_class($this->owner), $classes)) {
-            return true;
-        }
-        return false;
+        return ($classes = $this->getStandAloneElementClasses()) && in_array($this->owner::class, $classes);
     }
 
     public function getStandAloneElementClasses()

@@ -9,22 +9,27 @@
 
 namespace SilverStripers\ElementalSearch\Extensions;
 
+use Override;
 use SilverStripe\Control\Director;
 use SilverStripe\Versioned\Versioned;
 
 class SiteTreeDocumentGenerator extends SearchDocumentGenerator
 {
 
+    public $owner;
+    #[Override]
     public function onAfterWrite()
     {
         return null;
     }
 
+    #[Override]
     public function onAfterDelete()
     {
         return null;
     }
 
+    #[Override]
     public function onAfterPublish()
     {
         self::make_document_for($this->owner);
@@ -35,6 +40,7 @@ class SiteTreeDocumentGenerator extends SearchDocumentGenerator
         return null;
     }
 
+    #[Override]
     public function onAfterArchive()
     {
         self::delete_doc($this->owner);
@@ -49,14 +55,16 @@ class SiteTreeDocumentGenerator extends SearchDocumentGenerator
             $link = Director::absoluteURL($owner->Link());
             $link = str_replace('stage=Stage', '', $link);
             Versioned::set_reading_mode($mode);
-            if(strpos($link, '?') !== false) {
+            if(str_contains($link, '?')) {
                 return $link . '&SearchGen=1';
             }
+
             return $link . '?SearchGen=1';
         }
-        $class = get_class($owner);
+
+        $class = $owner::class;
         throw new Exception(
-            "SearchDocumentGenerator::getGenerateSearchLink() There is no Link method defined on class '$class'"
+            sprintf("SearchDocumentGenerator::getGenerateSearchLink() There is no Link method defined on class '%s'", $class)
         );
     }
 

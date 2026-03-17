@@ -9,17 +9,16 @@
 
 namespace SilverStripers\ElementalSearch\Extensions;
 
-use \Exception;
-use SilverStripe\Control\Director;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\TemplateGlobalProvider;
 use SilverStripers\ElementalSearch\Model\SearchDocument;
 
-class SearchDocumentGenerator extends DataExtension implements TemplateGlobalProvider
+class SearchDocumentGenerator extends Extension implements TemplateGlobalProvider
 {
 
+    public $owner;
     private static $prevent_search_documents = false;
 
     public static function search_documents_prevented()
@@ -81,16 +80,14 @@ class SearchDocumentGenerator extends DataExtension implements TemplateGlobalPro
         $schema = DataObject::getSchema();
         $fields = $schema->databaseFields($object->ClassName);
         $ret = true;
-        if (self::is_versioned($object)) {
-            if (!$object->isPublished()) {
-                $ret = false;
-            }
+        if (self::is_versioned($object) && !$object->isPublished()) {
+            $ret = false;
         }
-        if ($ret) {
-            if (array_key_exists('ShowInSearch', $fields)) {
-                $ret = $object->getField('ShowInSearch');
-            }
+
+        if ($ret && array_key_exists('ShowInSearch', $fields)) {
+            $ret = $object->getField('ShowInSearch');
         }
+
         return $ret;
     }
 
@@ -112,19 +109,20 @@ class SearchDocumentGenerator extends DataExtension implements TemplateGlobalPro
     {
         $doc = self::find_document($object);
         if(!$doc) {
-            $doc = new SearchDocument([
-                'Type' => get_class($object),
+            $doc = SearchDocument::create([
+                'Type' => $object::class,
                 'OriginID' => $object->ID
             ]);
             $doc->write();
         }
+
         return $doc;
     }
 
     public static function find_document(DataObject $object)
     {
         $doc = SearchDocument::get()->filter([
-            'Type' => get_class($object),
+            'Type' => $object::class,
             'OriginID' => $object->ID
         ])->first();
         return $doc;
@@ -132,7 +130,7 @@ class SearchDocumentGenerator extends DataExtension implements TemplateGlobalPro
 
     public static function is_search()
 	{
-		return isset($_REQUEST['SearchGen']) ? true : false;
+		return isset($_REQUEST['SearchGen']);
 	}
 
     public static function get_template_global_variables()
