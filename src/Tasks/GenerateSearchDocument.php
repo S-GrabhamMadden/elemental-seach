@@ -1,71 +1,53 @@
 <?php
-/**
- * Created by Nivanka Fonseka (nivanka@silverstripers.com).
- * User: nivankafonseka
- * Date: 9/7/18
- * Time: 12:32 PM
- * To change this template use File | Settings | File Templates.
- */
 
 namespace SilverStripers\ElementalSearch\Tasks;
 
-
+use Exception;
 use Override;
-use SilverStripe\Control\Director;
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripers\ElementalSearch\Extensions\SearchDocumentGenerator;
 use SilverStripers\ElementalSearch\Extensions\SiteTreeDocumentGenerator;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
 
 class GenerateSearchDocument extends BuildTask
 {
+    protected static string $commandName = 'make-search-docs';
 
-    protected $title = 'Re-generate all search documents';
+    protected string $title = 'Re-generate all search documents';
 
-    protected $description = 'Generate search documents for items.';
+    protected static string $description = 'Generate search documents for items.';
 
-    private static $segment = 'make-search-docs';
-
-    /**
-     * Implement this method in the task subclass to
-     * execute via the TaskRunner
-     *
-     * @param HTTPRequest $request
-     * @return
-     * @TODO SSU RECTOR UPGRADE TASK - BuildTask::run: Added new parameter $output in BuildTask::run()
-     * @TODO SSU RECTOR UPGRADE TASK - BuildTask::run: Changed type of parameter $request in BuildTask::run() from dynamic to Symfony\Component\Console\Input\InputInterface
-     * @TODO SSU RECTOR UPGRADE TASK - BuildTask::run: Renamed parameter $request in BuildTask::run() to $input
-     * @TODO SSU RECTOR UPGRADE TASK - BuildTask::run: Changed return type for method BuildTask::run() from dynamic to int
-     */
     #[Override]
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
-        $eol = Director::is_cli() ? PHP_EOL . PHP_EOL : '<br>';
         set_time_limit(50000);
         $classes = $this->getAllSearchDocClasses();
         foreach ($classes as $class) {
-            foreach ($list = DataList::create($class) as $record) {
-				$output = sprintf(
-						'Making record for %s type %s, link %s',
-						$record->getTitle(),
-						$record->ClassName,
-						ClassInfo::hasMethod($record, 'getGenerateSearchLink') ? $record->getGenerateSearchLink() : $record->Title);
+            foreach (DataList::create($class) as $record) {
+                $output->writeln(sprintf(
+                    'Making record for %s type %s, link %s',
+                    $record->getTitle(),
+                    $record->ClassName,
+                    ClassInfo::hasMethod($record, 'getGenerateSearchLink')
+                        ? $record->getGenerateSearchLink()
+                        : $record->Title
+                ));
 
-                $output .= $eol;
-
-                echo $output;
-				try {
-					SearchDocumentGenerator::make_document_for($record);
-				} catch (Exception) {
-				}
+                try {
+                    SearchDocumentGenerator::make_document_for($record);
+                } catch (Exception) {
+                    // @TODO (SS6 upgrade) log failure without interrupting batch
+                }
             }
         }
 
-        echo 'Completed';
+        return Command::SUCCESS;
     }
 
     public function getAllSearchDocClasses()
@@ -73,7 +55,7 @@ class GenerateSearchDocument extends BuildTask
         $list = [];
         foreach (ClassInfo::subclassesFor(DataObject::class) as $class) {
             $configs = Config::inst()->get($class, 'extensions', Config::UNINHERITED);
-            if($configs) {
+            if ($configs) {
                 $valid = in_array(SearchDocumentGenerator::class, $configs)
                     || in_array(SiteTreeDocumentGenerator::class, $configs);
 
@@ -85,5 +67,4 @@ class GenerateSearchDocument extends BuildTask
 
         return $list;
     }
-
 }
