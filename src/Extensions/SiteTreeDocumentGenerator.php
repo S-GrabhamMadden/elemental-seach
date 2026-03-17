@@ -17,6 +17,7 @@ class SiteTreeDocumentGenerator extends SearchDocumentGenerator
 {
 
     public $owner;
+
     #[Override]
     public function onAfterWrite()
     {
@@ -32,7 +33,7 @@ class SiteTreeDocumentGenerator extends SearchDocumentGenerator
     #[Override]
     public function onAfterPublish()
     {
-        self::make_document_for($this->owner);
+        self::make_document_for($this->getOwner());
     }
 
     public function onBeforeArchive()
@@ -43,12 +44,12 @@ class SiteTreeDocumentGenerator extends SearchDocumentGenerator
     #[Override]
     public function onAfterArchive()
     {
-        self::delete_doc($this->owner);
+        self::delete_doc($this->getOwner());
     }
 
     public function getGenerateSearchLink()
     {
-        $owner = $this->owner;
+        $owner = $this->getOwner();
         if(method_exists($owner, 'Link')) {
             $mode = Versioned::get_reading_mode();
             Versioned::set_reading_mode('Stage.Live');

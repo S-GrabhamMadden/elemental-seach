@@ -61,6 +61,10 @@ class SearchDocument extends DataObject
 
         try {
             $oldThemes = SSViewer::get_themes();
+            /** @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed default value for parameter $themes in SSViewer::set_themes() from [] to none
+             * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed type of parameter $themes in SSViewer::set_themes() from dynamic to array
+             * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed return type for method SSViewer::set_themes() from dynamic to void
+             */
             SSViewer::set_themes(SSViewer::config()->get('themes'));
 
             $isSiteTree = $origin instanceof SiteTree;
@@ -101,6 +105,10 @@ class SearchDocument extends DataObject
                     try {
                         // Restore front-end themes from config
                         $themes = SSViewer::config()->get('themes') ?: $oldThemes;
+                        /** @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed default value for parameter $themes in SSViewer::set_themes() from [] to none
+                         * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed type of parameter $themes in SSViewer::set_themes() from dynamic to array
+                         * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed return type for method SSViewer::set_themes() from dynamic to void
+                         */
                         SSViewer::set_themes($themes);
 
                         // Render page as non-member in live mode
@@ -112,6 +120,10 @@ class SearchDocument extends DataObject
                         $output[] = $response->getBody();
                     } finally {
                         // Restore themes
+                        /** @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed default value for parameter $themes in SSViewer::set_themes() from [] to none
+                         * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed type of parameter $themes in SSViewer::set_themes() from dynamic to array
+                         * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed return type for method SSViewer::set_themes() from dynamic to void
+                         */
                         SSViewer::set_themes($oldThemes);
                     }
                 }
@@ -164,6 +176,10 @@ class SearchDocument extends DataObject
             // Reset theme if an exception occurs, if you don't have a
             // try / finally around code that might throw an Exception,
             // CMS layout can break on the response. (SilverStripe 4.1.1)
+            /** @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed default value for parameter $themes in SSViewer::set_themes() from [] to none
+             * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed type of parameter $themes in SSViewer::set_themes() from dynamic to array
+             * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed return type for method SSViewer::set_themes() from dynamic to void
+             */
             SSViewer::set_themes($oldThemes);
         }
 

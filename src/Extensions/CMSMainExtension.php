@@ -27,6 +27,7 @@ class CMSMainExtension extends Extension
         $record = $this->getOwner()->getRecord($this->getOwner()->currentPageID());
 
         if(!$record->isOnDraftOnly() && self::config()->get('display_create_button')){
+            /** @TODO SSU RECTOR UPGRADE TASK - FieldList::insertAfter: Changed return type for method FieldList::insertAfter() from FormField|bool to FormField|null */
             $form->Actions()->insertAfter('action_publish',
                 FormAction::create('makeSearch', 'Create Search Doc')
                     ->setUseButtonTag(true)
