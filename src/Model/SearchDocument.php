@@ -60,12 +60,8 @@ class SearchDocument extends DataObject
         $output = [];
 
         try {
-            $oldThemes = SSViewer::get_themes();
-            /** @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed default value for parameter $themes in SSViewer::set_themes() from [] to none
-             * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed type of parameter $themes in SSViewer::set_themes() from dynamic to array
-             * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed return type for method SSViewer::set_themes() from dynamic to void
-             */
-            SSViewer::set_themes(SSViewer::config()->get('themes'));
+            $oldThemes = $this->normaliseThemes(SSViewer::get_themes());
+            SSViewer::set_themes($this->normaliseThemes(SSViewer::config()->get('themes'), $oldThemes));
 
             $isSiteTree = $origin instanceof SiteTree;
             $hasSearchLink = method_exists($origin, 'getGenerateSearchLink');
@@ -105,11 +101,7 @@ class SearchDocument extends DataObject
                     try {
                         // Restore front-end themes from config
                         $themes = SSViewer::config()->get('themes') ?: $oldThemes;
-                        /** @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed default value for parameter $themes in SSViewer::set_themes() from [] to none
-                         * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed type of parameter $themes in SSViewer::set_themes() from dynamic to array
-                         * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed return type for method SSViewer::set_themes() from dynamic to void
-                         */
-                        SSViewer::set_themes($themes);
+                        SSViewer::set_themes($this->normaliseThemes($themes, $oldThemes));
 
                         // Render page as non-member in live mode
                         $response = Member::actAs(null, function () use (&$searchLink) {
@@ -120,10 +112,6 @@ class SearchDocument extends DataObject
                         $output[] = $response->getBody();
                     } finally {
                         // Restore themes
-                        /** @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed default value for parameter $themes in SSViewer::set_themes() from [] to none
-                         * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed type of parameter $themes in SSViewer::set_themes() from dynamic to array
-                         * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed return type for method SSViewer::set_themes() from dynamic to void
-                         */
                         SSViewer::set_themes($oldThemes);
                     }
                 }
@@ -176,10 +164,6 @@ class SearchDocument extends DataObject
             // Reset theme if an exception occurs, if you don't have a
             // try / finally around code that might throw an Exception,
             // CMS layout can break on the response. (SilverStripe 4.1.1)
-            /** @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed default value for parameter $themes in SSViewer::set_themes() from [] to none
-             * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed type of parameter $themes in SSViewer::set_themes() from dynamic to array
-             * @TODO SSU RECTOR UPGRADE TASK - SSViewer::set_themes: Changed return type for method SSViewer::set_themes() from dynamic to void
-             */
             SSViewer::set_themes($oldThemes);
         }
 
@@ -213,6 +197,13 @@ class SearchDocument extends DataObject
         }
 
         return $contents;
+    }
+
+    private function normaliseThemes($themes, ?array $fallback = null): array
+    {
+        $value = $themes ?? $fallback ?? [];
+
+        return is_array($value) ? $value : (array) $value;
     }
 
     public function removeEmptyLines($string)
