@@ -24,7 +24,7 @@ class CMSMainExtension extends Extension
     
     public function updateEditForm(Form $form)
     {
-        $record = $this->getOwner()->getRecord($this->getOwner()->currentPageID());
+        $record = $this->getOwner()->getRecord($this->getOwner()->currentRecordID());
 
         if(!$record->isOnDraftOnly() && self::config()->get('display_create_button')){
             /** @TODO SSU RECTOR UPGRADE TASK - FieldList::insertAfter: Changed return type for method FieldList::insertAfter() from FormField|bool to FormField|null */
